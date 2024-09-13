@@ -24,6 +24,10 @@ function Transacciones() {
     setOpciones(false);
   }
 
+  const onNewScanResult = (decodedText, decodedResult) => {
+    alert(`Código QR escaneado: ${decodedText}`);
+  }
+
   return (
     <div className='flex flex-col gap-3 items-center'>
       {opciones &&
@@ -37,20 +41,25 @@ function Transacciones() {
         <>
           <h2>Recibir Dinero</h2>
           <p>Escanea el código QR para recibir dinero.</p>
-          <GeneradorQr 
-            ciudad="Quito" 
-            pais="Ecuador" 
-            descripccionTicket="Entrada a evento" 
-            genero="Adulto" 
-            motivo="Compra de entrada" 
-            precioTicket={10} 
+          <GeneradorQr
+            ciudad="Quito"
+            pais="Ecuador"
+            descripccionTicket="Entrada a evento"
+            genero="Adulto"
+            motivo="Compra de entrada"
+            precioTicket={10}
             precioTotal={10}
           />
           <Button variant='secondary' onClick={handleRegresar}>Regresar</Button>
         </>
       )}
       {transferirDinero && (
-        <ScannerQR />
+        <ScannerQR
+          fps={10}
+          qrbox={250}
+          disableFlip={false}
+          qrCodeSuccessCallback={onNewScanResult}
+        />
       )}
     </div>
   )

@@ -1,75 +1,50 @@
-import React, { Component } from 'react';
-import QrScanner from 'react-qr-scanner';
+import { Html5QrcodeScanner } from 'html5-qrcode';
+import { useEffect } from 'react';
 
-class ScannerQR extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      delay: 100,
-      result: 'No result',
-      devices: [], // Para almacenar la lista de dispositivos
-      rearCameraId: null, // Para almacenar el ID de la cámara trasera
-    };
+const qrcodeRegionId = "html5qr-code-full-region";
 
-    this.handleScan = this.handleScan.bind(this);
-    this.handleError = this.handleError.bind(this);
+// Creates the configuration object for Html5QrcodeScanner.
+const createConfig = (props) => {
+  let config = {};
+  if (props.fps) {
+    config.fps = props.fps;
   }
-
-  componentDidMount() {
-    this.getDevices();
+  if (props.qrbox) {
+    config.qrbox = props.qrbox;
   }
+  if (props.aspectRatio) {
+    config.aspectRatio = props.aspectRatio;
+  }
+  if (props.disableFlip !== undefined) {
+    config.disableFlip = props.disableFlip;
+  }
+  return config;
+};
 
-  // Método para obtener la lista de dispositivos de video
-  async getDevices() {
-    try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter(device => device.kind === 'videoinput');
-      this.setState({ devices: videoDevices });
+function ScannerQR({ fps, qrbox, disableFlip, qrCodeSuccessCallback, qrCodeErrorCallback }) {
 
-      // Encuentra el ID de la cámara trasera
-      const rearCamera = videoDevices.find(device => device.label.toLowerCase().includes('back') || device.label.toLowerCase().includes('rear'));
-      if (rearCamera) {
-        this.setState({ rearCameraId: rearCamera.deviceId });
-      }
-    } catch (error) {
-      console.error('Error al obtener dispositivos de video:', error);
+  useEffect(() => {
+    const config = createConfig({ fps, qrbox, disableFlip });
+    const verbose = false; // Set to true if you want verbose logging
+
+    if (!qrCodeSuccessCallback) {
+      console.error("qrCodeSuccessCallback is required.");
+      return;
     }
-  }
 
-  // Método para manejar el escaneo
-  handleScan(data) {
-    this.setState({
-      result: data.text || 'No result',
-    });
-  }
+    const html5QrcodeScanner = new Html5QrcodeScanner(qrcodeRegionId, config, verbose);
+    html5QrcodeScanner.render(qrCodeSuccessCallback, qrCodeErrorCallback);
 
-  // Método para manejar errores
-  handleError(err) {
-    console.error(err);
-  }
-
-  render() {
-    const previewStyle = {
-      height: 240,
-      width: 320,
+    return () => {
+      html5QrcodeScanner.clear().catch(error => {
+        console.error("Failed to clear html5QrcodeScanner. ", error);
+      });
     };
+  }, [fps, qrbox, disableFlip, qrCodeSuccessCallback, qrCodeErrorCallback]);
 
-    return (
-      <div>
-        <QrScanner
-          delay={this.state.delay}
-          style={previewStyle}
-          onError={this.handleError}
-          onScan={this.handleScan}
-          facingMode={this.state.rearCameraId ? undefined : 'environment'} // Usa 'environment' si no hay ID de cámara trasera
-          chooseDeviceId={(videoDevices) => {
-            return this.state.rearCameraId || (videoDevices.length > 0 ? videoDevices[0].deviceId : undefined);
-          }}
-        />
-        <p>{this.state.result}</p>
-      </div>
-    );
-  }
+  return (
+    <div id={qrcodeRegionId} />
+  );
 }
 
 export default ScannerQR;
