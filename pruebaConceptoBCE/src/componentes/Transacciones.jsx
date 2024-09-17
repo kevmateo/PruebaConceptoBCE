@@ -2,12 +2,17 @@ import { Button } from 'react-bootstrap';
 import { useState } from 'react';
 import GeneradorQr from './generardorQR';
 import ScannerQR from './ScannerQR';
+import LogoBCE from '../assets/img-bce-3.png';
+import ResultadoScann from './resultadoScann';
 
 function Transacciones() {
 
   const [recibirDinero, setRecibirDinero] = useState(false);
   const [opciones, setOpciones] = useState(true);
   const [transferirDinero, setTransferirDinero] = useState(false);
+  const [beneficiario, setBeneficiario] = useState('');
+  const [entidadFinanciera, setEntidadFinanciera] = useState('');
+  const [numCuenta, setNumCuenta] = useState('');
 
   const handleRecibirDinero = () => {
     setRecibirDinero(true);
@@ -15,7 +20,11 @@ function Transacciones() {
   }
 
   const handleRegresar = () => {
-    setRecibirDinero(false);
+    if (recibirDinero) {
+      setRecibirDinero(false);
+    } else {
+      setTransferirDinero(false);
+    }
     setOpciones(true);
   }
 
@@ -25,14 +34,22 @@ function Transacciones() {
   }
 
   const onNewScanResult = (decodedText, decodedResult) => {
-    alert(`Código QR escaneado: ${decodedText}`);
+    try{
+      const data = JSON.parse(decodedText);
+      setBeneficiario(data.beneficiario || '');
+      setEntidadFinanciera(data.entidadFinanciera || '');
+      setNumCuenta(data.numCuenta || '');
+    } catch (error) {
+      console.error('Error al leer el código QR', error);
+    }
+    setTransferirDinero(false);
   }
 
   return (
     <div className='flex flex-col gap-3 items-center'>
       {opciones &&
         <>
-          <h2>Opciones</h2>
+          <img src={LogoBCE} className='w-[300px]' />
           <Button variant="primary" onClick={handleTransferirDinero}>Transferir Dinero</Button>
           <Button variant="primary" onClick={handleRecibirDinero}>Recibir Dinero</Button>
         </>
@@ -42,23 +59,29 @@ function Transacciones() {
           <h2>Recibir Dinero</h2>
           <p>Escanea el código QR para recibir dinero.</p>
           <GeneradorQr
-            ciudad="Quito"
-            pais="Ecuador"
-            descripccionTicket="Entrada a evento"
-            genero="Adulto"
-            motivo="Compra de entrada"
-            precioTicket={10}
-            precioTotal={10}
+            beneficiario='Juan Leonel Perez Perez'
+            entidadFinanciera='Banco del Pichincha'
+            numCuenta='1234567890'
           />
           <Button variant='secondary' onClick={handleRegresar}>Regresar</Button>
         </>
       )}
       {transferirDinero && (
-        <ScannerQR
-          fps={10}
-          qrbox={250}
-          disableFlip={false}
-          qrCodeSuccessCallback={onNewScanResult}
+        <>
+          <ScannerQR
+            fps={10}
+            qrbox={250}
+            disableFlip={false}
+            qrCodeSuccessCallback={onNewScanResult}
+          />
+          <Button variant='secondary' onClick={handleRegresar}>Regresar</Button>
+        </>
+      )}
+      {beneficiario && entidadFinanciera && numCuenta && (
+        <ResultadoScann
+          beneficiario={beneficiario}
+          entidadFinanciera={entidadFinanciera}
+          numCuenta={numCuenta}
         />
       )}
     </div>
