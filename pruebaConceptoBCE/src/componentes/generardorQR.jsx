@@ -2,12 +2,13 @@
 import React from 'react';
 import QRCode from 'react-qr-code';
 
-function GeneradorQr({ beneficiario, entidadFinanciera, numCuenta }) {
+function GeneradorQr({ beneficiario, entidadFinanciera, numCuenta, ciudadOrigen }) {
 
   const qrData = JSON.stringify({
     beneficiario,
     entidadFinanciera,
-    numCuenta
+    numCuenta,
+    ciudadOrigen
   });
   
   return (

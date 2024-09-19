@@ -1,4 +1,4 @@
-import { Button } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 import { useState } from 'react';
 import GeneradorQr from './generardorQR';
 import ScannerQR from './ScannerQR';
@@ -13,6 +13,7 @@ function Transacciones() {
   const [beneficiario, setBeneficiario] = useState('');
   const [entidadFinanciera, setEntidadFinanciera] = useState('');
   const [numCuenta, setNumCuenta] = useState('');
+  const [resultadoScanneado, setResultadoScanneado] = useState(false);
 
   const handleRecibirDinero = () => {
     setRecibirDinero(true);
@@ -45,6 +46,13 @@ function Transacciones() {
     setTransferirDinero(false);
   }
 
+  const handleResultadoScan = () => {
+    setResultadoScanneado(true);
+    setOpciones(false);
+    setRecibirDinero(false);
+    setTransferirDinero(false);
+  }
+
   return (
     <div className='flex flex-col gap-3 items-center'>
       {opciones &&
@@ -62,12 +70,18 @@ function Transacciones() {
             beneficiario='Juan Leonel Perez Perez'
             entidadFinanciera='Banco del Pichincha'
             numCuenta='1234567890'
+            ciudadOrigen='Guayaquil'
           />
           <Button variant='secondary' onClick={handleRegresar}>Regresar</Button>
         </>
       )}
       {transferirDinero && (
         <>
+          <h3>Ingresa la llave BCE</h3>
+          <Form.Control type='text' placeholder='Llave BCE' />
+          <Button variant='primary' onClick={handleResultadoScan}>Buscar usuario</Button>
+          <span>-------------------o-------------------</span>
+          <h3>Escanea el código QR</h3>
           <ScannerQR
             fps={10}
             qrbox={250}
@@ -82,6 +96,14 @@ function Transacciones() {
           beneficiario={beneficiario}
           entidadFinanciera={entidadFinanciera}
           numCuenta={numCuenta}
+        />
+      )}
+      {resultadoScanneado && (
+        <ResultadoScann 
+          beneficiario="Kevin Mateo Cano"
+          entidadFinanciera="Banco del Pichincha"
+          numCuenta="0987654321"
+          ciudadOrigen="Quito"
         />
       )}
     </div>
